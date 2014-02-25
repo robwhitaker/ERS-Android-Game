@@ -16,7 +16,10 @@ public class TitleView extends View {
 	private int screenW, screenH;
 	private Bitmap playButtonUp;
 	private Bitmap playButtonDown;
+	private Bitmap optionButtonUp;
+	private Bitmap optionButtonDown;
 	private boolean playButtonPressed;
+	private boolean optionButtonPressed;
 	private Context currentContext;
 	
 	public TitleView(Context context) {
@@ -25,6 +28,9 @@ public class TitleView extends View {
 		titleGraphic = BitmapFactory.decodeResource(getResources(), R.drawable.title_graphic);
 		playButtonUp = BitmapFactory.decodeResource(getResources(), R.drawable.play_button_up);
 		playButtonDown = BitmapFactory.decodeResource(getResources(), R.drawable.play_button_down);
+		
+		optionButtonUp = BitmapFactory.decodeResource(getResources(), R.drawable.option_button_up);
+		optionButtonDown = BitmapFactory.decodeResource(getResources(), R.drawable.option_button_down);
 	}
 	
 	@Override
@@ -37,11 +43,16 @@ public class TitleView extends View {
 	@Override 
 	protected void onDraw(Canvas canvas) {
 		Bitmap playButton = playButtonPressed ? playButtonDown:playButtonUp;
+		Bitmap optionButton = optionButtonPressed ? optionButtonDown:optionButtonUp;
 		canvas.drawBitmap(titleGraphic, (screenW-titleGraphic.getWidth())/2,0,null);
 		canvas.drawBitmap(playButton, 
 						  (screenW-playButton.getWidth())/2,
 						  (int) (screenH*0.7),
 						  null);
+		canvas.drawBitmap(optionButton, 
+				  (screenW-optionButton.getWidth())/2,
+				  (int) (screenH*0.85),
+				  null);
 	}
 	
 	public boolean onTouchEvent(MotionEvent event) {
@@ -59,6 +70,14 @@ public class TitleView extends View {
 					playButtonUp.getHeight()) {
 						playButtonPressed = true;
 					}
+			if (x > (screenW-optionButtonUp.getWidth())/2 &&
+					(x < ((screenW-optionButtonUp.getWidth())/2) +
+					optionButtonUp.getWidth()) &&
+					y > (int)(screenH*0.85) &&
+					y < (int)(screenH*0.85) +
+					optionButtonUp.getHeight()) {
+						optionButtonPressed = true;
+					}
 			break;
 		case MotionEvent.ACTION_MOVE:
 			break;
@@ -68,6 +87,7 @@ public class TitleView extends View {
 					currentContext.startActivity(gameIntent);
 				}
 				playButtonPressed = false;
+				optionButtonPressed = false;
 			break;
 		}
 		
