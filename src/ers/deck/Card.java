@@ -18,8 +18,8 @@ public class Card {
 	public static final int NINE = 9;
 	public static final int TEN = 10;
 	public static final int JACK = 11;
-	public static final int KING = 12;
-	public static final int QUEEN = 13;
+	public static final int QUEEN = 12;
+	public static final int KING = 13;
 	public static final int ACE = 14;
 	
 	public Card(int newId) {

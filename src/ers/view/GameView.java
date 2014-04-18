@@ -11,6 +11,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.os.Handler;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Toast;
@@ -28,6 +29,10 @@ public class GameView extends View {
 	
 	public static int TURN = PLAYER;
 	public static int NUM_VALID_SLAP_CARDS = 0;
+	public static int CHANCES = -1;
+	public static int PICKUP = -1;
+	
+	Handler hand = new Handler();
 	
 	
 	public GameView(Context context) {
@@ -48,6 +53,8 @@ public class GameView extends View {
 		
 		TURN = PLAYER;
 		NUM_VALID_SLAP_CARDS = 0;
+		CHANCES = -1;
+		PICKUP = -1;
 	}
 	
 	@Override
@@ -89,7 +96,6 @@ public class GameView extends View {
 		//distribute cards between player and computer decks evenly
 		for(int i=0; tempDeck.size() > 0; i++) 
 			((i%2 == 0) ? playerDeck:computerDeck).push(tempDeck.pop());
-
 	}
 	
 	private void drawGameBoard(Canvas canvas) {
@@ -255,12 +261,8 @@ public class GameView extends View {
     					y > (int) (screenH - cardBack.getHeight()*1.25) &&
     					y < (int) (screenH - cardBack.getHeight()*1.25) +
     					cardBack.getHeight() &&
-    					TURN == PLAYER && //and it's the player's turn
-    					playerDeck.size() > 0) { //and the player still has cards to play
-        				
-        			centerPile.push(playerDeck.pop()); //push a card to the top of the deck
-        			TURN = COMPUTER; //set it to the computer's turn 
-        			NUM_VALID_SLAP_CARDS++; //added one more valid slap card to the deck
+    					TURN == PLAYER) { //and it's the player's turn
+        			placeCard(PLAYER);
         		}
         		
         		//if the player taps the center pile
@@ -270,12 +272,129 @@ public class GameView extends View {
     					y > (int) ((screenH - cardBack.getHeight())*0.46) &&
     					y < (int) (int) ((screenH - cardBack.getHeight())*0.52) +
     					cardBack.getHeight()) {
-        			handleSlap(PLAYER);
+        			if(PICKUP != PLAYER)
+        				handleSlap(PLAYER);
+        			else
+        				pickUpDeck(PLAYER);
         		}
         		break;
         }
         invalidate();
         return true;
+	}
+	
+	private void runComputer() {
+		hand.postDelayed(new Runnable() {
+			@Override
+			public void run() {
+				while(true) {
+			    try {
+					Thread.sleep(1000);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			    System.out.println("dingo");
+				if(TURN == COMPUTER)
+					placeCard(COMPUTER);
+				}
+			}
+		}, 1000);
+	}
+	
+	private void pickUpDeck(int receiver) {
+		Deck deckHandle = (receiver == PLAYER) ? playerDeck:computerDeck;
+		String receiverName = (receiver == PLAYER) ? "Player":"Computer";
+		
+		Toast.makeText(currentContext, receiverName+" takes the deck!", 
+				   Toast.LENGTH_SHORT).show();
+		deckHandle.addToBottom(centerPile);
+		NUM_VALID_SLAP_CARDS = 0;
+		TURN = receiver;
+		PICKUP = -1;
+	}
+	
+	private boolean placeCard(int placer) {
+		Deck deckHandle = (placer == PLAYER) ? playerDeck:computerDeck;
+		String placerName = (placer == PLAYER) ? "Player":"Computer";
+		
+		//if it is not this person's turn, return false
+		if(TURN != placer) {
+			Toast.makeText(currentContext, "Not "+placerName+"'s turn.", 
+					   Toast.LENGTH_SHORT).show();
+			return false;
+		}
+		
+		//if the player/computer doesn't have enough cards, return false
+		if(deckHandle.size() < 1) {
+			Toast.makeText(currentContext, placerName+" has no cards left.", 
+					   Toast.LENGTH_SHORT).show();
+			return false;
+		}
+		
+		//if someone needs to pick up the deck, don't allow the placement of more cards
+		if(PICKUP != -1) {
+			Toast.makeText(currentContext, "Can't place cards until someone picks up the deck.", 
+					   Toast.LENGTH_SHORT).show();
+			return false;
+		}
+		
+		//if the last card was not a face card, and no one needs to pick up the deck
+		//place a card normally
+		if(CHANCES == -1 && PICKUP == -1) {
+			Card c = deckHandle.pop();
+			centerPile.push(c);
+			NUM_VALID_SLAP_CARDS++;
+			switch(c.getRank()) {
+				case Card.JACK:
+					CHANCES = 1;
+					break;
+				case Card.QUEEN:
+					CHANCES = 2;
+					break;
+				case Card.KING:
+					CHANCES = 3;
+					break;
+				case Card.ACE:
+					CHANCES = 4;
+					break;
+			}
+			TURN = (TURN == PLAYER) ? COMPUTER:PLAYER; //switch the turn
+			return true;
+		} 
+		
+		if(CHANCES == 0) {
+			Toast.makeText(currentContext, placerName+" has run out of chances.", 
+					   Toast.LENGTH_SHORT).show();
+			return false;
+		} else { //there are some chances left
+			Card c = deckHandle.pop();
+			centerPile.push(c);
+			NUM_VALID_SLAP_CARDS++;
+			switch(c.getRank()) {
+				case Card.JACK:
+					CHANCES = 1;
+					break;
+				case Card.QUEEN:
+					CHANCES = 2;
+					break;
+				case Card.KING:
+					CHANCES = 3;
+					break;
+				case Card.ACE:
+					CHANCES = 4;
+					break;
+				default:
+					CHANCES--;
+					if(CHANCES == 0) {
+						PICKUP = (placer == PLAYER) ? COMPUTER:PLAYER;
+						CHANCES = -1;
+					}
+					return true;
+			}
+			TURN = (TURN == PLAYER) ? COMPUTER:PLAYER; //switch the turn
+			return true;
+		}
 	}
 	
 	private boolean handleSlap(int slapper) {
@@ -296,10 +415,7 @@ public class GameView extends View {
 				cards = centerPile.peek(2);
 				//if the two cards match (double / snap)
 				if(cards[0].getRank() == cards[1].getRank()) {
-					Toast.makeText(currentContext, slapperName+" takes the deck!", 
-							   Toast.LENGTH_SHORT).show();
-					deckHandle.addToBottom(centerPile);
-					NUM_VALID_SLAP_CARDS = 0;
+					pickUpDeck(slapper);
 					return true;
 				}
 				break;
@@ -309,10 +425,7 @@ public class GameView extends View {
 				//given that enough cards are valid to slap
 				if((NUM_VALID_SLAP_CARDS > 1 && cards[0].getRank() == cards[1].getRank()) ||
 				   (NUM_VALID_SLAP_CARDS > 2 && cards[0].getRank() == cards[2].getRank())) {
-					Toast.makeText(currentContext, slapperName+" takes the deck!", 
-							   Toast.LENGTH_SHORT).show();
-					deckHandle.addToBottom(centerPile);
-					NUM_VALID_SLAP_CARDS = 0;
+					pickUpDeck(slapper);
 					return true;
 				}
 		}
