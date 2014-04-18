@@ -29,10 +29,13 @@ public class GameView extends View {
 	public static final int PLAYER = 1;
 	public static final int COMPUTER = 2;
 	
-	public static int TURN = PLAYER;
-	public static int NUM_VALID_SLAP_CARDS = 0;
-	public static int CHANCES = -1;
-	public static int PICKUP = -1;
+	private int TURN = PLAYER;
+	private int NUM_VALID_SLAP_CARDS = 0;
+	private int CHANCES = -1;
+	private int PICKUP = -1;
+	
+	private boolean deckJustTaken = false;
+	private boolean gameActive = true;
 	
 	Handler handler;
 	
@@ -293,16 +296,22 @@ public class GameView extends View {
 		AsyncTask.execute(new Runnable() {
 			@Override
 			public void run() {
-				while(true) {
+				while(gameActive) {
 					try {Thread.sleep(500);} catch (InterruptedException e){}
 					if(PICKUP == COMPUTER)
-						pickUpDeck(COMPUTER);
+						handler.post(new Runnable() {
+							public void run() {
+								if(PICKUP == COMPUTER)
+									pickUpDeck(COMPUTER);
+							}
+						});
 					else if(isSlappable()) {
 						try {Thread.sleep(500);} catch (InterruptedException e){}
 						if(isSlappable())
 							handler.post(new Runnable() {
 								public void run() {
-									handleSlap(COMPUTER);
+									if(isSlappable());
+										handleSlap(COMPUTER);
 								}
 							});
 					}
@@ -335,6 +344,14 @@ public class GameView extends View {
 		NUM_VALID_SLAP_CARDS = 0;
 		TURN = receiver;
 		PICKUP = -1;
+		CHANCES = -1;
+		deckJustTaken = true;
+		//switch deckJustTaken off in 500 milliseconds
+		handler.postDelayed(new Runnable() {
+			public void run() {
+				deckJustTaken = false;
+			}
+		}, 500);
 		asyncInvalidate();
 	}
 	
@@ -342,7 +359,7 @@ public class GameView extends View {
 		Deck deckHandle = (placer == PLAYER) ? playerDeck:computerDeck;
 		String placerName = (placer == PLAYER) ? "Player":"Computer";
 		
-		
+		if(PICKUP == -1 && CHANCES == -1) {
 			Card c = deckHandle.pop();
 			centerPile.push(c);
 			NUM_VALID_SLAP_CARDS++;
@@ -363,6 +380,42 @@ public class GameView extends View {
 			TURN = (TURN == PLAYER) ? COMPUTER:PLAYER; //switch the turn
 			asyncInvalidate();
 			return true;
+		}
+		
+		if(CHANCES > 0) {
+			Card c = deckHandle.pop();
+			centerPile.push(c);
+			NUM_VALID_SLAP_CARDS++;
+			switch(c.getRank()) {
+				case Card.JACK:
+					CHANCES = 1;
+					TURN = (TURN == PLAYER) ? COMPUTER:PLAYER; //switch the turn
+					break;
+				case Card.QUEEN:
+					CHANCES = 2;
+					TURN = (TURN == PLAYER) ? COMPUTER:PLAYER; //switch the turn
+					break;
+				case Card.KING:
+					CHANCES = 3;
+					TURN = (TURN == PLAYER) ? COMPUTER:PLAYER; //switch the turn
+					break;
+				case Card.ACE:
+					CHANCES = 4;
+					TURN = (TURN == PLAYER) ? COMPUTER:PLAYER; //switch the turn
+					break;
+				default:
+					if(CHANCES-1 == 0) {
+						PICKUP = (placer == PLAYER) ? COMPUTER:PLAYER;
+						CHANCES = -1;
+						asyncInvalidate();
+						return true;
+					}
+					CHANCES--;
+			}
+			asyncInvalidate();
+			return true;
+		}
+		return false;
 		
 	}
 	
@@ -397,6 +450,8 @@ public class GameView extends View {
 	}
 	
 	private boolean handleSlap(int slapper) {
+		if(deckJustTaken) //if the deck was just taken, don't count this slap
+			return false;
 		Deck deckHandle = (slapper == PLAYER) ? playerDeck:computerDeck;
 		String slapperName = (slapper == PLAYER) ? "Player":"Computer";
 		Card[] cards;
