@@ -5,12 +5,14 @@ import com.example.ers.R;
 import ers.deck.Deck;
 import ers.deck.Card;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.os.AsyncTask;
 import android.os.Handler;
 import android.view.MotionEvent;
 import android.view.View;
@@ -32,7 +34,7 @@ public class GameView extends View {
 	public static int CHANCES = -1;
 	public static int PICKUP = -1;
 	
-	Handler hand = new Handler();
+	Handler handler;
 	
 	
 	public GameView(Context context) {
@@ -41,6 +43,7 @@ public class GameView extends View {
 		playerDeck = new Deck();
 		computerDeck = new Deck();
 		centerPile = new Deck();
+		handler = new Handler();
 		
 		float scale = context.getResources().getDisplayMetrics().density;
 		whitePaint = new Paint();
@@ -96,6 +99,8 @@ public class GameView extends View {
 		//distribute cards between player and computer decks evenly
 		for(int i=0; tempDeck.size() > 0; i++) 
 			((i%2 == 0) ? playerDeck:computerDeck).push(tempDeck.pop());
+		
+		runComputer();
 	}
 	
 	private void drawGameBoard(Canvas canvas) {
@@ -283,23 +288,41 @@ public class GameView extends View {
         return true;
 	}
 	
+	@SuppressLint("NewApi")
 	private void runComputer() {
-		hand.postDelayed(new Runnable() {
+		AsyncTask.execute(new Runnable() {
 			@Override
 			public void run() {
 				while(true) {
-			    try {
-					Thread.sleep(1000);
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			    System.out.println("dingo");
-				if(TURN == COMPUTER)
-					placeCard(COMPUTER);
+					try {Thread.sleep(500);} catch (InterruptedException e){}
+					if(PICKUP == COMPUTER)
+						pickUpDeck(COMPUTER);
+					else if(isSlappable()) {
+						try {Thread.sleep(500);} catch (InterruptedException e){}
+						if(isSlappable())
+							handler.post(new Runnable() {
+								public void run() {
+									handleSlap(COMPUTER);
+								}
+							});
+					}
+					else if(TURN == COMPUTER) {
+						try {Thread.sleep(750);} catch (InterruptedException e){}
+						if(TURN==COMPUTER)
+							placeCard(COMPUTER);	
+					}
 				}
 			}
-		}, 1000);
+		});
+	}
+	
+	private void asyncInvalidate() {
+		handler.post(new Runnable() {
+			@Override
+			public void run() {
+				invalidate();
+			}
+		});
 	}
 	
 	private void pickUpDeck(int receiver) {
@@ -312,36 +335,14 @@ public class GameView extends View {
 		NUM_VALID_SLAP_CARDS = 0;
 		TURN = receiver;
 		PICKUP = -1;
+		asyncInvalidate();
 	}
 	
 	private boolean placeCard(int placer) {
 		Deck deckHandle = (placer == PLAYER) ? playerDeck:computerDeck;
 		String placerName = (placer == PLAYER) ? "Player":"Computer";
 		
-		//if it is not this person's turn, return false
-		if(TURN != placer) {
-			Toast.makeText(currentContext, "Not "+placerName+"'s turn.", 
-					   Toast.LENGTH_SHORT).show();
-			return false;
-		}
 		
-		//if the player/computer doesn't have enough cards, return false
-		if(deckHandle.size() < 1) {
-			Toast.makeText(currentContext, placerName+" has no cards left.", 
-					   Toast.LENGTH_SHORT).show();
-			return false;
-		}
-		
-		//if someone needs to pick up the deck, don't allow the placement of more cards
-		if(PICKUP != -1) {
-			Toast.makeText(currentContext, "Can't place cards until someone picks up the deck.", 
-					   Toast.LENGTH_SHORT).show();
-			return false;
-		}
-		
-		//if the last card was not a face card, and no one needs to pick up the deck
-		//place a card normally
-		if(CHANCES == -1 && PICKUP == -1) {
 			Card c = deckHandle.pop();
 			centerPile.push(c);
 			NUM_VALID_SLAP_CARDS++;
@@ -360,41 +361,39 @@ public class GameView extends View {
 					break;
 			}
 			TURN = (TURN == PLAYER) ? COMPUTER:PLAYER; //switch the turn
+			asyncInvalidate();
 			return true;
-		} 
 		
-		if(CHANCES == 0) {
-			Toast.makeText(currentContext, placerName+" has run out of chances.", 
-					   Toast.LENGTH_SHORT).show();
-			return false;
-		} else { //there are some chances left
-			Card c = deckHandle.pop();
-			centerPile.push(c);
-			NUM_VALID_SLAP_CARDS++;
-			switch(c.getRank()) {
-				case Card.JACK:
-					CHANCES = 1;
+	}
+	
+	private boolean isSlappable() {
+		Card[] cards;
+		switch(centerPile.size()) {
+			case 0:
+			case 1:
+				//not enough cards to slap. instantly wrong. misslap.
+				return false;
+			case 2:
+				//enough cards to slap, but not enough to check 3
+				//if not enough valid slap cards, it's still a misslap
+				if(NUM_VALID_SLAP_CARDS != 2)
 					break;
-				case Card.QUEEN:
-					CHANCES = 2;
-					break;
-				case Card.KING:
-					CHANCES = 3;
-					break;
-				case Card.ACE:
-					CHANCES = 4;
-					break;
-				default:
-					CHANCES--;
-					if(CHANCES == 0) {
-						PICKUP = (placer == PLAYER) ? COMPUTER:PLAYER;
-						CHANCES = -1;
-					}
+				
+				cards = centerPile.peek(2);
+				//if the two cards match (double / snap)
+				if(cards[0].getRank() == cards[1].getRank()) 
 					return true;
-			}
-			TURN = (TURN == PLAYER) ? COMPUTER:PLAYER; //switch the turn
-			return true;
+				break;
+			default: //3 or more cards
+				cards = centerPile.peek(3);
+				//if the top two cards match or the top and bottom cards match (sandwich)
+				//given that enough cards are valid to slap
+				if((NUM_VALID_SLAP_CARDS > 1 && cards[0].getRank() == cards[1].getRank()) ||
+				   (NUM_VALID_SLAP_CARDS > 2 && cards[0].getRank() == cards[2].getRank())) 
+					return true;
 		}
+		//guess it wasn't slappable. shame.
+		return false;
 	}
 	
 	private boolean handleSlap(int slapper) {
@@ -429,12 +428,16 @@ public class GameView extends View {
 					return true;
 				}
 		}
-		//if we've gotten here, it's a misslap
-		Toast.makeText(currentContext, "Misslap. "+slapperName+" puts a card under.", 
-				   Toast.LENGTH_SHORT).show();
-		if(deckHandle.size() > 0)
-			centerPile.addToBottom(deckHandle.pop());
-		return false;
+		if(isSlappable()) {
+			pickUpDeck(slapper);
+			return true;
+		} else {
+			Toast.makeText(currentContext, "Misslap. "+slapperName+" puts a card under.", 
+					   Toast.LENGTH_SHORT).show();
+			if(deckHandle.size() > 0)
+				centerPile.addToBottom(deckHandle.pop());
+			return false;
+		}
 	}
 
 }
