@@ -1,8 +1,6 @@
 package ers.activity;
 
 import com.example.ers.R;
-import com.example.ers.R.layout;
-import com.example.ers.R.menu;
 
 import ers.view.TitleView;
 
