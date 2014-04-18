@@ -6,7 +6,9 @@ import ers.deck.Deck;
 import ers.deck.Card;
 
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -17,6 +19,7 @@ import android.os.Handler;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Toast;
+import android.app.Activity;
 
 public class GameView extends View {
 	private Bitmap cardBack;
@@ -61,6 +64,8 @@ public class GameView extends View {
 		NUM_VALID_SLAP_CARDS = 0;
 		CHANCES = -1;
 		PICKUP = -1;
+		gameActive = true;
+		deckJustTaken = false;
 	}
 	
 	@Override
@@ -100,8 +105,10 @@ public class GameView extends View {
 		tempDeck.shuffle();
 		
 		//distribute cards between player and computer decks evenly
-		for(int i=0; tempDeck.size() > 0; i++) 
-			((i%2 == 0) ? playerDeck:computerDeck).push(tempDeck.pop());
+//		for(int i=0; tempDeck.size() > 0; i++) 
+//			((i%2 == 0) ? playerDeck:computerDeck).push(tempDeck.pop());
+		computerDeck.push(tempDeck.pop());
+		playerDeck.addToBottom(tempDeck);
 		
 		runComputer();
 	}
@@ -298,14 +305,14 @@ public class GameView extends View {
 			public void run() {
 				while(gameActive) {
 					try {Thread.sleep(500);} catch (InterruptedException e){}
-					if(PICKUP == COMPUTER)
+					if(PICKUP == COMPUTER) {
 						handler.post(new Runnable() {
 							public void run() {
 								if(PICKUP == COMPUTER)
 									pickUpDeck(COMPUTER);
 							}
 						});
-					else if(isSlappable()) {
+					} else if(isSlappable()) {
 						try {Thread.sleep(500);} catch (InterruptedException e){}
 						if(isSlappable())
 							handler.post(new Runnable() {
@@ -314,11 +321,11 @@ public class GameView extends View {
 										handleSlap(COMPUTER);
 								}
 							});
-					}
-					else if(TURN == COMPUTER) {
+					} else if(TURN == COMPUTER) {
 						try {Thread.sleep(750);} catch (InterruptedException e){}
-						if(TURN==COMPUTER)
-							placeCard(COMPUTER);	
+						
+						if(TURN==COMPUTER) 
+							placeCard(COMPUTER);
 					}
 				}
 			}
@@ -357,7 +364,45 @@ public class GameView extends View {
 	
 	private boolean placeCard(int placer) {
 		Deck deckHandle = (placer == PLAYER) ? playerDeck:computerDeck;
-		String placerName = (placer == PLAYER) ? "Player":"Computer";
+//		String placerName = (placer == PLAYER) ? "Player":"Computer";
+		
+
+		//if the placer has no more cards to place, end the game here
+		if(deckHandle.size() < 1) {
+			//if there is a possible move left
+			if(isSlappable() || PICKUP == placer) {
+				Toast.makeText(currentContext, "No cards left!", 
+						   Toast.LENGTH_SHORT).show();
+				return false;
+			}
+			gameActive = false;
+			//otherwise, the game is over
+			//class to open Dialog with params in thread
+			class RunWithParam implements Runnable {
+				private int placer;
+				public RunWithParam(int p) {placer=p;}
+				public void run() {
+					String opponentName = (placer == PLAYER) ? "Computer":"Player";
+					AlertDialog.Builder builder = new AlertDialog.Builder(currentContext);
+					builder.setTitle(opponentName + " wins!");
+		            builder.setMessage("Click below to exit the match.");
+		            builder.setCancelable(false);
+		            builder.setPositiveButton("Exit",
+		                    new DialogInterface.OnClickListener() {
+		                public void onClick(DialogInterface dialog, int id) {	
+		                    ((Activity) currentContext).finish();
+		                    dialog.cancel();
+		                }
+		            });
+		            
+		            builder.create().show();
+				}
+			}
+			//open dialog
+			handler.post(new RunWithParam(placer));
+			
+            return false;
+		}
 		
 		if(PICKUP == -1 && CHANCES == -1) {
 			Card c = deckHandle.pop();
