@@ -27,7 +27,7 @@ public class GameView extends View {
 	private int cardScaleX, cardScaleY;
 	private Context currentContext;
 	private Deck playerDeck, computerDeck, centerPile;
-	private Paint whitePaint;
+	private Paint whitePaint,blackPaint;
 	
 	public static final int PLAYER = 1;
 	public static final int COMPUTER = 2;
@@ -59,6 +59,14 @@ public class GameView extends View {
 		whitePaint.setTextAlign(Paint.Align.CENTER);
 		whitePaint.setTextSize(scale*25);
 		whitePaint.setShadowLayer(1.0f,1.5f,1.5f, Color.BLACK);
+		
+		blackPaint = new Paint();
+		blackPaint.setAntiAlias(true);
+		blackPaint.setColor(Color.BLACK);
+		blackPaint.setStyle(Paint.Style.STROKE);
+		blackPaint.setTextAlign(Paint.Align.LEFT);
+		blackPaint.setTextSize(scale*20);
+		blackPaint.setShadowLayer(1.0f,1.5f,1.5f, Color.GRAY);
 		
 		TURN = PLAYER;
 		NUM_VALID_SLAP_CARDS = 0;
@@ -105,10 +113,8 @@ public class GameView extends View {
 		tempDeck.shuffle();
 		
 		//distribute cards between player and computer decks evenly
-//		for(int i=0; tempDeck.size() > 0; i++) 
-//			((i%2 == 0) ? playerDeck:computerDeck).push(tempDeck.pop());
-		computerDeck.push(tempDeck.pop());
-		playerDeck.addToBottom(tempDeck);
+		for(int i=0; tempDeck.size() > 0; i++) 
+			((i%2 == 0) ? playerDeck:computerDeck).push(tempDeck.pop());
 		
 		runComputer();
 	}
@@ -254,6 +260,21 @@ public class GameView extends View {
 					  	(int) ((screenH - cardBack.getHeight())*0.46),
 					  	null);
 				break;
+		}
+		
+		//draw turn text
+		float turnTextY = (TURN == PLAYER) ? (int) (screenH - cardBack.getHeight()*1.25 + cardBack.getHeight()/2)+blackPaint.getTextSize()/2:
+			(int) ((cardBack.getHeight()*0.25) + cardBack.getHeight()/2)+blackPaint.getTextSize()/2;
+		float turnTextX =(float) (screenW*0.02);
+		String turnText = (TURN == PLAYER) ? "Player":"Computer";
+		
+		canvas.drawText(turnText+"'s", turnTextX, turnTextY-blackPaint.getTextSize()/2, blackPaint);
+		canvas.drawText("turn.", turnTextX, turnTextY+blackPaint.getTextSize()/2, blackPaint);
+		
+		//draw chances text
+		if(CHANCES > 0) {
+			float chancesTextY = screenH/2;
+			canvas.drawText("Chances: "+CHANCES, turnTextX, chancesTextY, blackPaint);
 		}
 	}
 	
