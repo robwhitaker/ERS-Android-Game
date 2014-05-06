@@ -3,6 +3,8 @@ package view;
 import activity.MainActivity;
 import com.example.ers.R;
 
+import audio.ERSAudioPlayer;
+
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -26,6 +28,9 @@ public class TitleView extends View {
     public TitleView(Context context) {
         super(context);
         currentContext = context;
+
+        ERSAudioPlayer.init(currentContext);
+
         titleGraphic = BitmapFactory.decodeResource(getResources(), R.drawable.title_graphic);
         playButtonUp = BitmapFactory.decodeResource(getResources(), R.drawable.play_button_up);
         playButtonDown = BitmapFactory.decodeResource(getResources(), R.drawable.play_button_down);
@@ -86,8 +91,10 @@ public class TitleView extends View {
                 if(playButtonPressed) {
                     Intent gameIntent = new Intent(currentContext, GameActivity.class);
                     currentContext.startActivity(gameIntent);
+                    ERSAudioPlayer.playSFX("cardDown");
                 }
                 if(optionButtonPressed) {
+                    ERSAudioPlayer.playSFX("cardDown");
 //                    Intent gameIntent = new Intent(currentContext,GameActivity.class);
 //                    currentContext.startActivity(gameIntent);
                 }

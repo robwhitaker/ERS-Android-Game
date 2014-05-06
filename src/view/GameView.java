@@ -1,5 +1,6 @@
 package view;
 
+import audio.ERSAudioPlayer;
 import com.example.ers.R;
 
 import deck.Deck;
@@ -40,8 +41,7 @@ public class GameView extends View {
     private boolean deckJustTaken = false;
     private boolean gameActive = true;
 
-    Handler handler;
-
+    private Handler handler;
 
     public GameView(Context context) {
         super(context);
@@ -360,6 +360,20 @@ public class GameView extends View {
         });
     }
 
+    private void asyncPlaySound(String soundID) {
+        class RunWithParam implements Runnable {
+            private String sId;
+            public RunWithParam(String id) {
+                sId = id;
+            }
+            public void run() {
+                ERSAudioPlayer.playSFX(sId);
+            }
+        }
+
+        handler.post(new RunWithParam(soundID));
+    }
+
     private void pickUpDeck(int receiver) {
         Deck deckHandle = (receiver == PLAYER) ? playerDeck:computerDeck;
         String receiverName = (receiver == PLAYER) ? "Player":"Computer";
@@ -378,6 +392,7 @@ public class GameView extends View {
                 deckJustTaken = false;
             }
         }, 500);
+        asyncPlaySound("slap");
         asyncInvalidate();
     }
 
@@ -442,6 +457,7 @@ public class GameView extends View {
                     break;
             }
             TURN = (TURN == PLAYER) ? COMPUTER:PLAYER; //switch the turn
+            asyncPlaySound("cardDown");
             asyncInvalidate();
             return true;
         }
@@ -471,11 +487,13 @@ public class GameView extends View {
                     if(CHANCES-1 == 0) {
                         PICKUP = (placer == PLAYER) ? COMPUTER:PLAYER;
                         CHANCES = -1;
+                        asyncPlaySound("cardDown");
                         asyncInvalidate();
                         return true;
                     }
                     CHANCES--;
             }
+            asyncPlaySound("cardDown");
             asyncInvalidate();
             return true;
         }
@@ -519,6 +537,7 @@ public class GameView extends View {
         Deck deckHandle = (slapper == PLAYER) ? playerDeck:computerDeck;
         String slapperName = (slapper == PLAYER) ? "Player":"Computer";
         Card[] cards;
+        asyncPlaySound("slap");
         switch(centerPile.size()) {
             case 0:
             case 1:
