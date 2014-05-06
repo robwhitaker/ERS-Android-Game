@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.view.Window;
 import android.view.WindowManager;
-import audio.ERSAudioPlayer;
 import view.GameView;
 
 public class GameActivity extends Activity {
@@ -17,17 +16,16 @@ public class GameActivity extends Activity {
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(gView);
-        ERSAudioPlayer.playBGM();
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-        ERSAudioPlayer.playBGM();
+    public void onBackPressed() {
+        super.onBackPressed();
+        finish();
+        System.exit(0);
     }
     @Override
     protected void onPause() {
         super.onPause();
-        ERSAudioPlayer.stopBGM();
     }
 }
