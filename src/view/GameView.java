@@ -114,7 +114,7 @@ public class GameView extends View {
         for(int i=0; tempDeck.size() > 0; i++)
             ((i%2 == 0) ? playerDeck:computerDeck).push(tempDeck.pop());
 
-//        runComputer();
+        runComputer();
     }
 
     private void drawGameBoard(Canvas canvas) {
