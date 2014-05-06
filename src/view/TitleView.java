@@ -1,6 +1,6 @@
 package view;
 
-import activity.MainActivity;
+import activity.OptionsActivity;
 import com.example.ers.R;
 
 import audio.ERSAudioPlayer;
@@ -13,6 +13,7 @@ import android.graphics.Canvas;
 import android.view.MotionEvent;
 import android.view.View;
 import activity.GameActivity;
+import options.GameOptions;
 
 public class TitleView extends View {
     private Bitmap titleGraphic;
@@ -30,6 +31,7 @@ public class TitleView extends View {
         currentContext = context;
 
         ERSAudioPlayer.init(currentContext);
+        GameOptions.init(context);
 
         titleGraphic = BitmapFactory.decodeResource(getResources(), R.drawable.title_graphic);
         playButtonUp = BitmapFactory.decodeResource(getResources(), R.drawable.play_button_up);
@@ -95,8 +97,8 @@ public class TitleView extends View {
                 }
                 if(optionButtonPressed) {
                     ERSAudioPlayer.playSFX("cardDown");
-//                    Intent gameIntent = new Intent(currentContext,GameActivity.class);
-//                    currentContext.startActivity(gameIntent);
+                    Intent gameIntent = new Intent(currentContext, OptionsActivity.class);
+                    currentContext.startActivity(gameIntent);
                 }
                 playButtonPressed = false;
                 optionButtonPressed = false;
