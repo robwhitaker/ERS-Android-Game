@@ -1,10 +1,10 @@
-package activity;
+package ers.activity;
 
 import android.app.Activity;
 import android.os.Bundle;
 import android.view.Window;
 import android.view.WindowManager;
-import view.GameView;
+import ers.view.GameView;
 
 public class GameActivity extends Activity {
     @Override

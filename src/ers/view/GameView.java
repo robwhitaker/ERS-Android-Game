@@ -1,10 +1,10 @@
-package view;
+package ers.view;
 
-import audio.ERSAudioPlayer;
+import ers.audio.ERSAudioPlayer;
 import com.example.ers.R;
 
-import deck.Deck;
-import deck.Card;
+import ers.deck.Deck;
+import ers.deck.Card;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
@@ -21,7 +21,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Toast;
 import android.app.Activity;
-import options.GameOptions;
+import ers.options.GameOptions;
 
 /**
  * View where the game is displayed and played.

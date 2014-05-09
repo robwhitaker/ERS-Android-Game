@@ -1,4 +1,4 @@
-package deck;
+package ers.deck;
 
 import android.graphics.Bitmap;
 

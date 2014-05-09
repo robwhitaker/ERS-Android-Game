@@ -1,4 +1,4 @@
-package activity;
+package ers.activity;
 
 import android.app.Activity;
 import android.os.Bundle;
@@ -10,7 +10,7 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 import com.example.ers.R;
-import options.GameOptions;
+import ers.options.GameOptions;
 
 public class OptionsActivity extends Activity {
 

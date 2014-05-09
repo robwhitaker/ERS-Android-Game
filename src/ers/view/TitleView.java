@@ -1,9 +1,9 @@
-package view;
+package ers.view;
 
-import activity.OptionsActivity;
+import ers.activity.OptionsActivity;
 import com.example.ers.R;
 
-import audio.ERSAudioPlayer;
+import ers.audio.ERSAudioPlayer;
 
 import android.content.Context;
 import android.content.Intent;
@@ -12,8 +12,8 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.view.MotionEvent;
 import android.view.View;
-import activity.GameActivity;
-import options.GameOptions;
+import ers.activity.GameActivity;
+import ers.options.GameOptions;
 
 /**
  * Title screen view

@@ -1,11 +1,11 @@
-package audio;
+package ers.audio;
 
 import android.content.Context;
 import android.media.SoundPool;
 import android.media.AudioManager;
 
 import com.example.ers.R;
-import options.GameOptions;
+import ers.options.GameOptions;
 
 import java.util.HashMap;
 

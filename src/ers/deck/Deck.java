@@ -1,4 +1,4 @@
-package deck;
+package ers.deck;
 
 import java.util.ArrayList;
 import java.util.Collections;

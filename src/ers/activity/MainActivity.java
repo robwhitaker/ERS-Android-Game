@@ -1,8 +1,8 @@
-package activity;
+package ers.activity;
 
 import com.example.ers.R;
 
-import view.TitleView;
+import ers.view.TitleView;
 
 import android.os.Bundle;
 import android.app.Activity;

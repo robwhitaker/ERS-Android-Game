@@ -1,10 +1,8 @@
-package options;
+package ers.options;
 
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
-
-import java.util.HashMap;
 
 /**
  * The GameOptions class holds static options and functions to be accessed throughout
