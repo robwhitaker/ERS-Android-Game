@@ -15,6 +15,9 @@ import android.view.View;
 import activity.GameActivity;
 import options.GameOptions;
 
+/**
+ * Title screen view
+ */
 public class TitleView extends View {
     private Bitmap titleGraphic;
     private int screenW, screenH;
@@ -26,10 +29,15 @@ public class TitleView extends View {
     private boolean optionButtonPressed;
     private Context currentContext;
 
+    /**
+     * Default constructor. Initializes game.
+     * @param context the current context
+     */
     public TitleView(Context context) {
         super(context);
         currentContext = context;
 
+        //initialize audio player and game options
         ERSAudioPlayer.init(currentContext);
         GameOptions.init(context);
 
@@ -50,6 +58,7 @@ public class TitleView extends View {
 
     @Override
     protected void onDraw(Canvas canvas) {
+        //draw the logo and buttons to the screen
         Bitmap playButton = playButtonPressed ? playButtonDown:playButtonUp;
         Bitmap optionButton = optionButtonPressed ? optionButtonDown:optionButtonUp;
         canvas.drawBitmap(titleGraphic, (screenW-titleGraphic.getWidth())/2,0,null);
@@ -68,6 +77,7 @@ public class TitleView extends View {
         int x = (int) event.getX();
         int y = (int) event.getY();
 
+        //check if the user has pressed either of the buttons
         switch(eventAction) {
             case MotionEvent.ACTION_DOWN:
                 if (x > (screenW-playButtonUp.getWidth())/2 &&
@@ -91,15 +101,18 @@ public class TitleView extends View {
                 break;
             case MotionEvent.ACTION_UP:
                 if(playButtonPressed) {
+                    //if the play button was pressed, go to the game activity
                     Intent gameIntent = new Intent(currentContext, GameActivity.class);
                     currentContext.startActivity(gameIntent);
                     ERSAudioPlayer.playSFX("cardDown");
                 }
                 if(optionButtonPressed) {
+                    //if the option button was pressed, go to the options activity
                     ERSAudioPlayer.playSFX("cardDown");
                     Intent gameIntent = new Intent(currentContext, OptionsActivity.class);
                     currentContext.startActivity(gameIntent);
                 }
+                //reset playButtonPressed and optionButtonPressed
                 playButtonPressed = false;
                 optionButtonPressed = false;
                 break;

@@ -23,6 +23,9 @@ import android.widget.Toast;
 import android.app.Activity;
 import options.GameOptions;
 
+/**
+ * View where the game is displayed and played.
+ */
 public class GameView extends View {
     private Bitmap cardBack;
     private int screenW, screenH;
@@ -44,6 +47,10 @@ public class GameView extends View {
 
     private Handler handler;
 
+    /**
+     * GameView default constructor. Initializes variables.
+     * @param context The context
+     */
     public GameView(Context context) {
         super(context);
         currentContext = context;
@@ -77,6 +84,13 @@ public class GameView extends View {
         deckJustTaken = false;
     }
 
+    /**
+     * Sets up dimensions of cards and items on screen
+     * @param w    Current width
+     * @param h    Current height
+     * @param oldw Old width
+     * @param oldh Old height
+     */
     @Override
     public void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
@@ -93,6 +107,9 @@ public class GameView extends View {
                 false);
     }
 
+    /**
+     * Initializes the game. Creates cards. Builds decks. Starts computer player.
+     */
     private void initGame() {
         //load all the cards into one deck
         Deck tempDeck = new Deck();
@@ -115,9 +132,13 @@ public class GameView extends View {
         for(int i=0; tempDeck.size() > 0; i++)
             ((i%2 == 0) ? playerDeck:computerDeck).push(tempDeck.pop());
 
-        runComputer();
+        runComputer(); //start the computer player
     }
 
+    /**
+     * Draws the game board. Called from onDraw.
+     * @param canvas The canvas to draw to
+     */
     private void drawGameBoard(Canvas canvas) {
         //DRAW THE PLAYER'S DECK
         switch(playerDeck.size()) {
@@ -297,7 +318,7 @@ public class GameView extends View {
                         y < (int) (screenH - cardBack.getHeight()*1.25) +
                                 cardBack.getHeight() &&
                         TURN == PLAYER) { //and it's the player's turn
-                    placeCard(PLAYER);
+                    placeCard(PLAYER); //try to place a card as PLAYER
                 }
 
                 //if the player taps the center pile
@@ -307,10 +328,10 @@ public class GameView extends View {
                         y > (int) ((screenH - cardBack.getHeight())*0.46) &&
                         y < (int) (int) ((screenH - cardBack.getHeight())*0.52) +
                                 cardBack.getHeight()) {
-                    if(PICKUP != PLAYER)
-                        handleSlap(PLAYER);
-                    else
-                        pickUpDeck(PLAYER);
+                    if(PICKUP != PLAYER) //if the player cannot pickup the deck
+                        handleSlap(PLAYER); //the player is trying to slap it
+                    else //otherwise
+                        pickUpDeck(PLAYER); //the player picks up the deck
                 }
                 break;
         }
@@ -318,8 +339,12 @@ public class GameView extends View {
         return true;
     }
 
+    /**
+     * Begin the computer player's thread
+     */
     @SuppressLint("NewApi")
     private void runComputer() {
+        //Get computer reaction time delays from GameOptions
         Integer pDelay = (Integer) GameOptions.get("pickupDelay");
         final Integer pDelay_ = (pDelay != null) ? pDelay:GameOptions.DEFAULT_PICKUP_DELAY;
 
@@ -329,30 +354,36 @@ public class GameView extends View {
         Integer tDelay = (Integer) GameOptions.get("turnDelay");
         final Integer tDelay_ = (tDelay != null) ? tDelay:GameOptions.DEFAULT_TURN_DELAY;
 
+        //Begin computer thread
         AsyncTask.execute(new Runnable() {
             @Override
             public void run() {
                 while(gameActive) {
                     //check every 100ms for changes
                     try {Thread.sleep(100);} catch (InterruptedException e){}
+                    //if the has won a face card battle, it can pickup the deck
                     if(PICKUP == COMPUTER) {
+                        //Wait pDelay_ ms before picking up the deck
                         try {Thread.sleep(pDelay_); } catch (InterruptedException e) {}
+                        //call pickUpDeck for the computer within a handler
                         handler.post(new Runnable() {
                             public void run() {
                                 if(PICKUP == COMPUTER)
                                     pickUpDeck(COMPUTER);
                             }
                         });
-                    } else if(isSlappable()) {
+                    } else if(isSlappable()) { //if the computer cannot pickup the deck, but it can slap...
+                        //wait sDelay_ ms before trying to slap
                         try {Thread.sleep(sDelay_);} catch (InterruptedException e){}
-                        if(isSlappable())
-                            handler.post(new Runnable() {
+                        if(isSlappable()) //is the deck still slappable after sDelay_ ms?
+                            handler.post(new Runnable() { //if so, call handleSlap for the computer in a handler
                                 public void run() {
                                     if(isSlappable());
                                     handleSlap(COMPUTER);
                                 }
                             });
-                    } else if(TURN == COMPUTER) {
+                    } else if(TURN == COMPUTER) { //comp can't pickup or slap. Is it the comp's turn?
+                        //wait tDelay_ ms before computer places a card
                         try {Thread.sleep(tDelay_);} catch (InterruptedException e){}
 
                         if(TURN==COMPUTER)
@@ -363,6 +394,9 @@ public class GameView extends View {
         });
     }
 
+    /**
+     * An async call to invalidate
+     */
     private void asyncInvalidate() {
         handler.post(new Runnable() {
             @Override
@@ -372,6 +406,10 @@ public class GameView extends View {
         });
     }
 
+    /**
+     * An async call to ERSAudioPlayer.playSFX() that takes a param
+     * @param soundID the id of the sound to play
+     */
     private void asyncPlaySound(String soundID) {
         class RunWithParam implements Runnable {
             private String sId;
@@ -386,18 +424,25 @@ public class GameView extends View {
         handler.post(new RunWithParam(soundID));
     }
 
+    /**
+     * Handle picking up the deck
+     * @param receiver The PLAYER or COMPUTER variable, whichever one is picking up the deck.
+     */
     private void pickUpDeck(int receiver) {
+        //the deck to add cards to
         Deck deckHandle = (receiver == PLAYER) ? playerDeck:computerDeck;
+        //the name of the player to reference in Toasts
         String receiverName = (receiver == PLAYER) ? "Player":"Computer";
-
         Toast.makeText(currentContext, receiverName+" takes the deck!",
                 Toast.LENGTH_SHORT).show();
+        //add to bottom of deckHandle
         deckHandle.addToBottom(centerPile);
+        //reset variables appropriately now that pile has been picked up
         NUM_VALID_SLAP_CARDS = 0;
         TURN = receiver;
         PICKUP = -1;
         CHANCES = -1;
-        deckJustTaken = true;
+        deckJustTaken = true; //makes sure slaps right after deck is taken aren't considered misslaps
         //switch deckJustTaken off in 500 milliseconds
         handler.postDelayed(new Runnable() {
             public void run() {
@@ -408,10 +453,14 @@ public class GameView extends View {
         asyncInvalidate();
     }
 
+    /**
+     * Handle placing a card
+     * @param placer The PLAYER or COMPUTER variable, whichever one is placing a card
+     * @return True if a card was successfully place, false otherwise
+     */
     private boolean placeCard(int placer) {
+        //the deck to place cards from
         Deck deckHandle = (placer == PLAYER) ? playerDeck:computerDeck;
-//		String placerName = (placer == PLAYER) ? "Player":"Computer";
-
 
         //if the placer has no more cards to place, end the game here
         if(deckHandle.size() < 1) {
@@ -450,6 +499,8 @@ public class GameView extends View {
             return false;
         }
 
+        //if no one can pickup the deck and there isn't a face card on top of the pile, place a card normally
+        //if a face card is placed, set CHANCES to the correct number
         if(PICKUP == -1 && CHANCES == -1) {
             Card c = deckHandle.pop();
             centerPile.push(c);
@@ -474,6 +525,7 @@ public class GameView extends View {
             return true;
         }
 
+        //if CHANCE > 0, place cards without changing turn until another face card is placed
         if(CHANCES > 0) {
             Card c = deckHandle.pop();
             centerPile.push(c);
@@ -497,6 +549,7 @@ public class GameView extends View {
                     break;
                 default:
                     if(CHANCES-1 == 0) {
+                        //if chances run out, the person who placed the face card may pickup the deck
                         PICKUP = (placer == PLAYER) ? COMPUTER:PLAYER;
                         CHANCES = -1;
                         asyncPlaySound("cardDown");
@@ -513,6 +566,10 @@ public class GameView extends View {
 
     }
 
+    /**
+     * Check if the center pile is slappable
+     * @return True if it is slappable, false otherwise
+     */
     private boolean isSlappable() {
         Card[] cards;
         switch(centerPile.size()) {
@@ -530,58 +587,53 @@ public class GameView extends View {
                 //if the two cards match (double / snap)
                 if(cards[0].getRank() == cards[1].getRank())
                     return true;
+
+                //if the top two cards add up to 10, it's a valid slap (10s rule)
+                if((cards[0].getRank() + cards[1].getRank() == 10) ||
+                   (cards[0].getRank() == Card.ACE && cards[1].getRank() == Card.NINE) ||
+                   (cards[0].getRank() == Card.NINE && cards[1].getRank() == Card.ACE))
+                    return true;
+
                 break;
             default: //3 or more cards
+                //if there aren't even 2 valid cards to slap, this isn't slappable
+                if(NUM_VALID_SLAP_CARDS < 2)
+                    return false;
+
                 cards = centerPile.peek(3);
                 //if the top two cards match or the top and bottom cards match (sandwich)
                 //given that enough cards are valid to slap
                 if((NUM_VALID_SLAP_CARDS > 1 && cards[0].getRank() == cards[1].getRank()) ||
-                        (NUM_VALID_SLAP_CARDS > 2 && cards[0].getRank() == cards[2].getRank()))
+                   (NUM_VALID_SLAP_CARDS > 2 && cards[0].getRank() == cards[2].getRank()))
+                    return true;
+
+                //if the top two cards add up to 10, it's a valid slap (10s rule)
+                if((cards[0].getRank() + cards[1].getRank() == 10) ||
+                   (cards[0].getRank() == Card.ACE && cards[1].getRank() == Card.NINE) ||
+                   (cards[0].getRank() == Card.NINE && cards[1].getRank() == Card.ACE))
                     return true;
         }
         //guess it wasn't slappable. shame.
         return false;
     }
 
+    /**
+     * Handle slapping the pile
+     * @param slapper The PLAYER or COMPUTER variable, whichever one slapped the pile
+     * @return True on successful slap, false otherwise
+     */
     private boolean handleSlap(int slapper) {
         if(deckJustTaken) //if the deck was just taken, don't count this slap
             return false;
+        //the deck of the slapper
         Deck deckHandle = (slapper == PLAYER) ? playerDeck:computerDeck;
         String slapperName = (slapper == PLAYER) ? "Player":"Computer";
-        Card[] cards;
         asyncPlaySound("slap");
-        switch(centerPile.size()) {
-            case 0:
-            case 1:
-                //not enough cards to slap. instantly wrong. misslap.
-                break;
-            case 2:
-                //enough cards to slap, but not enough to check 3
-                //if not enough valid slap cards, it's still a misslap
-                if(NUM_VALID_SLAP_CARDS != 2)
-                    break;
-
-                cards = centerPile.peek(2);
-                //if the two cards match (double / snap)
-                if(cards[0].getRank() == cards[1].getRank()) {
-                    pickUpDeck(slapper);
-                    return true;
-                }
-                break;
-            default: //3 or more cards
-                cards = centerPile.peek(3);
-                //if the top two cards match or the top and bottom cards match (sandwich)
-                //given that enough cards are valid to slap
-                if((NUM_VALID_SLAP_CARDS > 1 && cards[0].getRank() == cards[1].getRank()) ||
-                        (NUM_VALID_SLAP_CARDS > 2 && cards[0].getRank() == cards[2].getRank())) {
-                    pickUpDeck(slapper);
-                    return true;
-                }
-        }
+        //if the deck is slappable, slapper picks it up
         if(isSlappable()) {
             pickUpDeck(slapper);
             return true;
-        } else {
+        } else { //otherwise, notify that the slapper has slapped incorrectly and must put a card under the pile
             Toast.makeText(currentContext, "Misslap. "+slapperName+" puts a card under.",
                     Toast.LENGTH_SHORT).show();
             if(deckHandle.size() > 0)

@@ -9,6 +9,7 @@ import view.GameView;
 public class GameActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        //set up the GameView
         super.onCreate(savedInstanceState);
         GameView gView = new GameView(this);
         gView.setKeepScreenOn(true);
@@ -21,7 +22,7 @@ public class GameActivity extends Activity {
     @Override
     public void onBackPressed() {
         super.onBackPressed();
-        GameView.gameActive = false;
+        GameView.gameActive = false; //stop computer thread
         finish();
     }
     @Override

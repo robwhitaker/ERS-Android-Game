@@ -19,16 +19,21 @@ public class OptionsActivity extends Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        //set up the OptionsView
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.options);
 
-        addOptionListeners();
-        setDefaultOptions();
+        addOptionListeners(); //add change listeners to option elements
+        setDefaultOptions(); //set defaults for options elements
     }
 
+    /**
+     * Set option elements to default values based on either what the user has
+     * previously set or the defaults defined in GameOptions.
+     */
     private void setDefaultOptions() {
         Integer tDelay = (Integer) GameOptions.get("turnDelay");
         turnDelay.setProgress((tDelay != null) ? tDelay:GameOptions.DEFAULT_TURN_DELAY);
@@ -47,6 +52,9 @@ public class OptionsActivity extends Activity {
         GameOptions.set("sfx", SFX.isChecked());
     }
 
+    /**
+     * Add listeners to option elements that will set the corresponding value in GameOptions.
+     */
     private void addOptionListeners() {
         SFX = (ToggleButton) findViewById(R.id.sfxButton);
         SFX.setOnClickListener(new View.OnClickListener() {

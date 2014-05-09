@@ -14,6 +14,7 @@ public class MainActivity extends Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        //set up the TitleView
         super.onCreate(savedInstanceState);
         TitleView tView = new TitleView(this);
         tView.setKeepScreenOn(true);
