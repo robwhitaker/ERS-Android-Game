@@ -39,7 +39,7 @@ public class GameView extends View {
     private int PICKUP = -1;
 
     private boolean deckJustTaken = false;
-    private boolean gameActive = true;
+    public static boolean gameActive = true;
 
     private Handler handler;
 

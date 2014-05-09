@@ -21,8 +21,8 @@ public class GameActivity extends Activity {
     @Override
     public void onBackPressed() {
         super.onBackPressed();
+        GameView.gameActive = false;
         finish();
-        System.exit(0);
     }
     @Override
     protected void onPause() {
