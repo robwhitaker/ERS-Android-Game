@@ -26,11 +26,29 @@ public class OptionsActivity extends Activity {
         setContentView(R.layout.options);
 
         addOptionListeners();
+        setDefaultOptions();
+    }
+
+    private void setDefaultOptions() {
+        Integer tDelay = (Integer) GameOptions.get("turnDelay");
+        turnDelay.setProgress((tDelay != null) ? tDelay:GameOptions.DEFUALT_TURN_DELAY);
+        GameOptions.set("turnDelay",turnDelay.getProgress());
+
+        Integer pDelay = (Integer) GameOptions.get("pickupDelay");
+        pickupDelay.setProgress((pDelay != null) ? pDelay:GameOptions.DEFAULT_PICKUP_DELAY);
+        GameOptions.set("pickupDelay",pickupDelay.getProgress());
+
+        Integer sDelay = (Integer) GameOptions.get("slapDelay");
+        slapDelay.setProgress((sDelay != null) ? sDelay:GameOptions.DEFAULT_SLAP_DELAY);
+        GameOptions.set("slapDelay",slapDelay.getProgress());
+
+        Boolean sfx = (Boolean) GameOptions.get("sfx");
+        SFX.setChecked((sfx != null) ? sfx:GameOptions.DEFAULT_SFX_STATE);
+        GameOptions.set("sfx", SFX.isChecked());
     }
 
     private void addOptionListeners() {
         SFX = (ToggleButton) findViewById(R.id.sfxButton);
-        SFX.setChecked((Boolean) GameOptions.get("sfx"));
         SFX.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

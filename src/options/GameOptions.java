@@ -8,6 +8,10 @@ import java.util.HashMap;
 
 public class GameOptions {
     private static SharedPreferences prefs;
+    public static final int     DEFAULT_SLAP_DELAY   = 750;
+    public static final int     DEFAULT_PICKUP_DELAY = 600;
+    public static final int     DEFUALT_TURN_DELAY   = 400;
+    public static final boolean DEFAULT_SFX_STATE = true;
 
     public static void init(Context context) {
         prefs = context.getSharedPreferences("ERS_Prefs", Context.MODE_PRIVATE);
@@ -26,6 +30,6 @@ public class GameOptions {
     }
 
     public static Object get(String key) {
-        return prefs.getAll().get(key);
+        return prefs.contains(key) ? prefs.getAll().get(key):null;
     }
 }
