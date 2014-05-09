@@ -10,7 +10,7 @@ public class GameOptions {
     private static SharedPreferences prefs;
     public static final int     DEFAULT_SLAP_DELAY   = 750;
     public static final int     DEFAULT_PICKUP_DELAY = 600;
-    public static final int     DEFUALT_TURN_DELAY   = 400;
+    public static final int     DEFAULT_TURN_DELAY   = 400;
     public static final boolean DEFAULT_SFX_STATE = true;
 
     public static void init(Context context) {

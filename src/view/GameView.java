@@ -327,7 +327,7 @@ public class GameView extends View {
         final Integer sDelay_ = (sDelay != null) ? sDelay:GameOptions.DEFAULT_SLAP_DELAY;
 
         Integer tDelay = (Integer) GameOptions.get("turnDelay");
-        final Integer tDelay_ = (tDelay != null) ? tDelay:GameOptions.DEFUALT_TURN_DELAY;
+        final Integer tDelay_ = (tDelay != null) ? tDelay:GameOptions.DEFAULT_TURN_DELAY;
 
         AsyncTask.execute(new Runnable() {
             @Override

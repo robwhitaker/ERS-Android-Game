@@ -31,7 +31,7 @@ public class OptionsActivity extends Activity {
 
     private void setDefaultOptions() {
         Integer tDelay = (Integer) GameOptions.get("turnDelay");
-        turnDelay.setProgress((tDelay != null) ? tDelay:GameOptions.DEFUALT_TURN_DELAY);
+        turnDelay.setProgress((tDelay != null) ? tDelay:GameOptions.DEFAULT_TURN_DELAY);
         GameOptions.set("turnDelay",turnDelay.getProgress());
 
         Integer pDelay = (Integer) GameOptions.get("pickupDelay");
