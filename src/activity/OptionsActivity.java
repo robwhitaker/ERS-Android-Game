@@ -6,13 +6,16 @@ import android.view.Menu;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.CheckBox;
+import android.widget.SeekBar;
+import android.widget.TextView;
+import android.widget.ToggleButton;
 import com.example.ers.R;
 import options.GameOptions;
 
 public class OptionsActivity extends Activity {
 
-    private CheckBox SFX;
+    private ToggleButton SFX;
+    private SeekBar turnDelay, pickupDelay, slapDelay;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -22,17 +25,57 @@ public class OptionsActivity extends Activity {
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.options);
 
-        addSFXListener();
+        addOptionListeners();
     }
 
-    private void addSFXListener() {
-        SFX = (CheckBox) findViewById(R.id.sfx);
-        SFX.setChecked(GameOptions.getSFX());
+    private void addOptionListeners() {
+        SFX = (ToggleButton) findViewById(R.id.sfxButton);
+        SFX.setChecked((Boolean) GameOptions.get("sfx"));
         SFX.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                GameOptions.setSFX(SFX.isChecked());
+                GameOptions.set("sfx", SFX.isChecked());
             }
+        });
+
+        turnDelay = (SeekBar) findViewById(R.id.compTurnDelaySeek);
+        pickupDelay = (SeekBar) findViewById(R.id.compPickupDelaySeek);
+        slapDelay = (SeekBar) findViewById(R.id.compSlapDelaySeek);
+
+        turnDelay.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                TextView tv = ((TextView) findViewById(R.id.compTurnDelayLabel));
+                tv.setText(R.string.turnDelay);
+                tv.setText(tv.getText() + ": " + turnDelay.getProgress() + "ms");
+                GameOptions.set("turnDelay", turnDelay.getProgress());
+            }
+            @Override public void onStartTrackingTouch(SeekBar seekBar) {}
+            @Override public void onStopTrackingTouch(SeekBar seekBar) {}
+        });
+
+        pickupDelay.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                TextView tv = ((TextView) findViewById(R.id.compPickupDelayLabel));
+                tv.setText(R.string.pickupDelay);
+                tv.setText(tv.getText() + ": " + pickupDelay.getProgress() + "ms");
+                GameOptions.set("pickupDelay", pickupDelay.getProgress());
+            }
+            @Override public void onStartTrackingTouch(SeekBar seekBar) {}
+            @Override public void onStopTrackingTouch(SeekBar seekBar) {}
+        });
+
+        slapDelay.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                TextView tv = ((TextView) findViewById(R.id.compSlapDelayLabel));
+                tv.setText(R.string.slapDelay);
+                tv.setText(tv.getText() + ": " + slapDelay.getProgress() + "ms");
+                GameOptions.set("slapDelay", slapDelay.getProgress());
+            }
+            @Override public void onStartTrackingTouch(SeekBar seekBar) {}
+            @Override public void onStopTrackingTouch(SeekBar seekBar) {}
         });
     }
 

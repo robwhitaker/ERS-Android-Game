@@ -3,15 +3,57 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
               android:orientation="vertical"
               android:layout_width="match_parent"
-              android:layout_height="match_parent">
-    
-    <CheckBox
-            android:id="@+id/sfx"
+              android:layout_height="match_parent" android:weightSum="1">
+
+    <SeekBar
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/compTurnDelaySeek" android:max="1000" android:indeterminate="false"/>
+    <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/sfx"
-            android:paddingLeft="10pt"
-            android:layout_gravity="center_horizontal"
-            android:checked="true"/>
+            android:text="@string/turnDelay"
+            android:id="@+id/compTurnDelayLabel" android:max="1000" android:indeterminate="false"/>
+    <Space
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.07" />
+    <SeekBar
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/compSlapDelaySeek" android:max="1000" android:indeterminate="false"/>
+    <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/slapDelay"
+            android:id="@+id/compSlapDelayLabel" android:indeterminate="false"/>
+
+    <Space android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_weight="0.07"
+           android:layout_gravity="center_horizontal"/>
+
+    <SeekBar
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/compPickupDelaySeek" android:max="1000" android:indeterminate="false"/>
+
+    <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/pickupDelay"
+            android:id="@+id/compPickupDelayLabel"/>
+
+    <Space android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_weight="0.07"
+           android:id="@+id/space2"/>
+
+    <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/soundeffects"
+            android:id="@+id/sfxLabel" android:layout_gravity="center_horizontal"/>
+    <ToggleButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/soundeffects"
+            android:id="@+id/sfxButton" android:layout_gravity="center_horizontal" android:checked="true"/>
 
 </LinearLayout>

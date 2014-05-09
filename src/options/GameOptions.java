@@ -4,23 +4,28 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 
+import java.util.HashMap;
+
 public class GameOptions {
     private static SharedPreferences prefs;
-    private static boolean SFX = true;
 
     public static void init(Context context) {
         prefs = context.getSharedPreferences("ERS_Prefs", Context.MODE_PRIVATE);
-        SFX = prefs.getBoolean("sfx", true);
     }
 
-    public static void setSFX(boolean b) {
+    public static void set(String key, boolean val) {
         Editor e  = prefs.edit();
-        e.putBoolean("sfx", b);
+        e.putBoolean(key, val);
         e.commit();
-        SFX = b;
     }
 
-    public static boolean getSFX() {
-        return SFX;
+    public static void set(String key, int val) {
+        Editor e  = prefs.edit();
+        e.putInt(key, val);
+        e.commit();
+    }
+
+    public static Object get(String key) {
+        return prefs.getAll().get(key);
     }
 }

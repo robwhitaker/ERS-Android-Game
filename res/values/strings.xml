@@ -3,4 +3,8 @@
     <string name="app_name">ERS</string>
     <string name="action_settings">Settings</string>
     <string name="sfx">Toggle SFX</string>
+    <string name="soundeffects">Sound Effects</string>
+    <string name="pickupDelay">Computer Pickup Delay</string>
+    <string name="slapDelay">Computer Slap Delay</string>
+    <string name="turnDelay">Computer Turn Delay</string>
 </resources>

@@ -24,7 +24,7 @@ public class ERSAudioPlayer {
     }
 
     public static void playSFX(String id) {
-        if(!GameOptions.getSFX())
+        if(!((Boolean) GameOptions.get("sfx")))
             return;
         float volume = 1.0f;
         if(soundPool == null || registeredSounds == null)
