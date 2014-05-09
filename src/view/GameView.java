@@ -21,6 +21,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Toast;
 import android.app.Activity;
+import options.GameOptions;
 
 public class GameView extends View {
     private Bitmap cardBack;
@@ -319,12 +320,23 @@ public class GameView extends View {
 
     @SuppressLint("NewApi")
     private void runComputer() {
+        Integer pDelay = (Integer) GameOptions.get("pickupDelay");
+        final Integer pDelay_ = (pDelay != null) ? pDelay:GameOptions.DEFAULT_PICKUP_DELAY;
+
+        Integer sDelay = (Integer) GameOptions.get("slapDelay");
+        final Integer sDelay_ = (sDelay != null) ? sDelay:GameOptions.DEFAULT_SLAP_DELAY;
+
+        Integer tDelay = (Integer) GameOptions.get("turnDelay");
+        final Integer tDelay_ = (tDelay != null) ? tDelay:GameOptions.DEFUALT_TURN_DELAY;
+
         AsyncTask.execute(new Runnable() {
             @Override
             public void run() {
                 while(gameActive) {
-                    try {Thread.sleep(500);} catch (InterruptedException e){}
+                    //check every 100ms for changes
+                    try {Thread.sleep(100);} catch (InterruptedException e){}
                     if(PICKUP == COMPUTER) {
+                        try {Thread.sleep(pDelay_); } catch (InterruptedException e) {}
                         handler.post(new Runnable() {
                             public void run() {
                                 if(PICKUP == COMPUTER)
@@ -332,7 +344,7 @@ public class GameView extends View {
                             }
                         });
                     } else if(isSlappable()) {
-                        try {Thread.sleep(500);} catch (InterruptedException e){}
+                        try {Thread.sleep(sDelay_);} catch (InterruptedException e){}
                         if(isSlappable())
                             handler.post(new Runnable() {
                                 public void run() {
@@ -341,7 +353,7 @@ public class GameView extends View {
                                 }
                             });
                     } else if(TURN == COMPUTER) {
-                        try {Thread.sleep(750);} catch (InterruptedException e){}
+                        try {Thread.sleep(tDelay_);} catch (InterruptedException e){}
 
                         if(TURN==COMPUTER)
                             placeCard(COMPUTER);
